@@ -2,6 +2,13 @@ const User = require("../models/UserModel");
 const { createSecretToken } = require("../util/SecretToken");
 const bcrypt = require("bcrypt");
 
+const cookieOptions = {
+  withCredentials: true,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
+
 module.exports.Signup = async (req, res, next) => {
   try {
     const { email, password, username, createdAt } = req.body;
@@ -10,14 +17,11 @@ module.exports.Signup = async (req, res, next) => {
       return res.json({ message: "User already exists" });
     }
     const user = await User.create({ email, password, username, createdAt });
-    const token = createSecretToken(user._id);
-    res.cookie("token", token, {
-      withCredentials: true,
-      httpOnly: false,
-    });
+    const token = createSecretToken(user.id);
+    res.cookie("token", token, cookieOptions);
     res
       .status(201)
-      .json({ message: "User signed in successfully", success: true, user });
+      .json({ message: "User signed in successfully", success: true, user: { id: user.id, email: user.email, username: user.username } });
     next();
   } catch (error) {
     console.error(error);
@@ -38,11 +42,8 @@ module.exports.Login = async (req, res, next) => {
     if (!auth) {
       return res.json({message:'Incorrect password or email' }) 
     }
-     const token = createSecretToken(user._id);
-     res.cookie("token", token, {
-       withCredentials: true,
-       httpOnly: false,
-     });
+    const token = createSecretToken(user.id);
+     res.cookie("token", token, cookieOptions);
      res.status(201).json({ message: "User logged in successfully", success: true });
      next()
   } catch (error) {

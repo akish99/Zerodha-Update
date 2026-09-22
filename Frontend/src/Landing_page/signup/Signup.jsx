@@ -42,7 +42,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post(
-        "http://localhost:4000/signup",
+        `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/signup`,
         {
           ...inputValue,
         },
@@ -52,7 +52,7 @@ const Signup = () => {
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
-          navigate("/");
+          navigate("/home");
         }, 1000);
       } else {
         handleError(message);

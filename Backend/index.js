@@ -1,7 +1,6 @@
 require("dotenv").config();
 
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -13,12 +12,12 @@ const cookieParser = require("cookie-parser");
 const authRoute = require("./Routes/AuthRoute");
 
 const PORT = process.env.PORT || 3002;
-const URL = process.env.MONGO_URL;
-
 const app = express();
 
 app.use(cors({
-    origin: ["http://localhost:3002/"],
+    origin: (process.env.CLIENT_ORIGINS || "http://localhost:5173,http://localhost:5174")
+        .split(",")
+        .map((origin) => origin.trim()),
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
@@ -130,31 +129,33 @@ app.use(bodyParser.json());
 // });
 
 app.get("/allHoldings", async (req, res) => {
-    let allHoldings = await HoldingsModel.find({});
-    res.json(allHoldings);
+    try {
+        const allHoldings = await HoldingsModel.find();
+        res.json(allHoldings);
+    } catch (error) {
+        res.status(500).json({ message: "Unable to fetch holdings" });
+    }
 });
 
 app.get("/allPositions", async (req, res) => {
-    let allPositions = await PositionsModel.find({});
-    res.json(allPositions);
+    try {
+        const allPositions = await PositionsModel.find();
+        res.json(allPositions);
+    } catch (error) {
+        res.status(500).json({ message: "Unable to fetch positions" });
+    }
 });
 
 app.post("/newOrder", async (req, res) => {
-    let newOrder = new OrdersModel({
-        name: req.body.name,
-        qty: req.body.qty,
-        price: req.body.price,
-        mode: req.body.mode,
-    });
-
-    newOrder.save();
-
-    res.send("Order saved!");
+    try {
+        const newOrder = new OrdersModel(req.body);
+        await newOrder.save();
+        res.send("Order saved!");
+    } catch (error) {
+        res.status(500).json({ message: "Unable to save order" });
+    }
 });
 
-
 app.listen(PORT, () => {
-    console.log("App started!!");
-    mongoose.connect(URL);
-    console.log("DB Connected!!");
-})
+  console.log(`API listening on port ${PORT}`);
+});

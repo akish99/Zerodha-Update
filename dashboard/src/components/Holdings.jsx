@@ -9,7 +9,7 @@
 // const [allHoldings, setallHoldings] = useState([]);
 
 // useEffect(() =>{
-//   axios.get("http://localhost:3002/allHoldings").then((res) => {
+//   axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/allHoldings`).then((res) => {
 //     console.log(res);
 //     console.log(res.data);
 //     setallHoldings(res.data);
@@ -105,7 +105,7 @@ const Holdings = () => {
   const [allHoldings, setAllHoldings] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3002/allHoldings").then((res) => {
+    axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:4000"}/allHoldings`).then((res) => {
       // console.log(res.data);
       setAllHoldings(res.data);
     });

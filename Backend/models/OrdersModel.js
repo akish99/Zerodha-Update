@@ -1,7 +1,26 @@
-const { model } = require("mongoose");
+const supabase = require("../db/supabase");
 
-const { OrdersSchema } = require("../schemas/OrdersSchema");
+class OrdersModel {
+	constructor(values) {
+		Object.assign(this, values);
+	}
 
-const OrdersModel = new model("order", OrdersSchema);
+	async save() {
+		const { data, error } = await supabase
+			.from("orders")
+			.insert({
+				name: this.name,
+				qty: this.qty,
+				price: this.price,
+				mode: this.mode,
+			})
+			.select()
+			.single();
+
+		if (error) throw error;
+		Object.assign(this, data);
+		return this;
+	}
+}
 
 module.exports = { OrdersModel };
